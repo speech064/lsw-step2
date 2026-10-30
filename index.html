@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>기억의 갱도 · 제주 서부 일제강점기 진지 다크투어</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;500;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--bg:#0d0f12;--surface:#15181c;--line:rgba(232,228,218,.14);--bone:#e8e4da;--text:#b9bcc0;--muted:#8d9298;--rust:#d4604a;--rust-fill:#a8392a;--serif:'Noto Serif KR','Nanum Myeongjo',serif;--sans:'Pretendard Variable',Pretendard,'Malgun Gothic',sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:calc(100% * var(--scale,1))}
+body{margin:0;background:var(--bg);color:var(--text);font:400 1rem/1.75 var(--sans);word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--bone)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* 첫 화면 */
+.hero{min-height:78vh;display:grid;align-content:center;padding:80px 0 56px;position:relative;overflow:hidden;
+  background:radial-gradient(60% 50% at 78% 40%,rgba(168,57,42,.22),transparent 70%),radial-gradient(40% 40% at 15% 85%,rgba(232,228,218,.05),transparent 70%)}
+.hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--line)}
+.eyebrow{font-size:13px;letter-spacing:.32em;color:var(--rust);margin:0 0 20px}
+h1{font:700 clamp(48px,11vw,120px)/1.05 var(--serif);color:var(--bone);margin:0 0 18px;letter-spacing:-.02em}
+h1 span{color:var(--rust)}
+.sub{font:300 clamp(18px,2.6vw,26px)/1.5 var(--serif);color:var(--bone);margin:0 0 36px;max-width:720px}
+.facts{display:flex;flex-wrap:wrap;gap:12px}
+.fact{border:1px solid var(--line);padding:10px 18px;font-size:14px;color:var(--bone)}
+.fact b{font:700 22px var(--serif);margin-right:4px}
+.go{display:inline-block;margin-top:36px;font-size:14px;letter-spacing:.2em;color:var(--bone);text-decoration:none;border-bottom:1px solid var(--rust);padding-bottom:4px}
+
+/* 제목 줄 */
+section{padding:72px 0 0}
+h2{font:700 clamp(26px,4vw,38px)/1.3 var(--serif);color:var(--bone);margin:0 0 10px}
+.lead{margin:0 0 28px;max-width:680px}
+.label{font-size:12px;letter-spacing:.28em;color:var(--rust);margin:0 0 10px}
+
+/* 지도 */
+.mapbox{position:relative}
+#map{height:min(68vh,560px);border:1px solid var(--line);background:#111317}
+.maptool{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line)}
+.seg button{font:inherit;font-size:14px;background:transparent;color:var(--text);border:0;padding:9px 16px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--bone);color:#101214;font-weight:600}
+.stat{margin-left:auto;font-size:14px;color:var(--bone)}
+.stat b{font:700 20px var(--serif)}
+.badge{width:30px;height:30px;border-radius:50%;background:var(--rust-fill);color:#fff;border:2px solid var(--bone);font:700 14px/26px var(--serif);text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#1b1e23;color:var(--text);border-radius:2px;box-shadow:0 4px 20px rgba(0,0,0,.6)}
+.leaflet-popup-content{font:400 14px/1.6 var(--sans);margin:12px 14px}
+.leaflet-popup-content b{font:700 17px var(--serif);color:var(--bone);display:block}
+.leaflet-container a{color:var(--bone)}
+.leaflet-control-attribution{background:rgba(13,15,18,.8)!important;color:var(--muted)!important}
+.leaflet-control-attribution a{color:var(--muted)!important}
+.leaflet-bar a{background:#1b1e23;color:var(--bone);border-color:var(--line)}
+.status{margin:0 0 12px;padding:12px 16px;border-left:3px solid var(--rust);background:rgba(212,96,74,.1);color:var(--bone);font-size:14px}.status.warn{border-color:#c9a227;background:rgba(201,162,39,.1)}.nomap{display:grid;place-items:center;height:100%;text-align:center;color:var(--muted);padding:24px}
+
+/* 코스 */
+.stops{list-style:none;margin:0;padding:0;position:relative}
+.stops:before{content:"";position:absolute;left:23px;top:20px;bottom:20px;width:1px;background:linear-gradient(var(--rust),var(--line))}
+.stop{position:relative;padding:0 0 12px 68px;scroll-margin-top:20px}
+.stop .no{position:absolute;left:0;top:6px;width:48px;height:48px;border-radius:50%;background:var(--bg);border:1px solid var(--rust);color:var(--rust);font:700 20px/46px var(--serif);text-align:center}
+.leg{font-size:13px;color:var(--muted);padding:2px 0 14px 68px;letter-spacing:.04em}
+.leg:before{content:"↓ "}
+.card{background:var(--surface);border:1px solid var(--line);padding:22px 24px;transition:border-color .2s}
+.card.on{border-color:var(--rust)}
+.card h3{font:700 24px/1.35 var(--serif);color:var(--bone);margin:0 0 4px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.tag{font-size:12px;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);padding:1px 10px}
+.addr{font-size:.84rem;color:var(--muted);margin:0 0 12px}
+.card .t{font:500 1rem var(--serif);color:var(--bone);margin:0 0 6px}
+.txt{margin:0;color:var(--text);font-size:.9375rem}
+.txt.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.note{margin:14px 0 0;padding:12px 14px;border-left:2px solid var(--rust);background:rgba(212,96,74,.07);font-size:.875rem;color:var(--bone)}
+.note small{display:block;color:var(--rust);font-size:11.5px;letter-spacing:.2em;margin-bottom:2px}
+.act{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px}
+.act button,.act a{font:inherit;font-size:13.5px;color:var(--bone);background:transparent;border:0;border-bottom:1px solid var(--line);padding:2px 0;cursor:pointer;text-decoration:none}
+.act button:hover,.act a:hover{border-color:var(--rust)}
+
+/* 답사 전에 */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.box{border:1px solid var(--line);padding:20px 22px;background:var(--surface)}
+.box h3{font:700 18px var(--serif);color:var(--bone);margin:0 0 8px}
+.box p,.box ul{margin:0;font-size:.9rem;padding-left:0;list-style:none}
+.box li{padding:3px 0 3px 14px;position:relative}.box li:before{content:"·";position:absolute;left:2px;color:var(--rust)}
+footer{padding:64px 0 80px;color:var(--muted);font-size:13px}
+footer .wrap{border-top:1px solid var(--line);padding-top:24px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--bone);color:#101214;padding:10px 20px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9999}
+.toast.on{opacity:1}
+.loading{padding:28px 0 28px 68px;color:var(--muted);list-style:none;position:relative}
+.loading:before{content:"";position:absolute;left:18px;top:30px;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--rust);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.maploading{position:absolute;inset:0;z-index:500;display:grid;place-items:center;background:rgba(13,15,18,.82);color:var(--bone);font-size:15px;letter-spacing:.1em}
+.maploading[hidden]{display:none}
+.status.practice{border-color:#c9a227;background:rgba(201,162,39,.12)}
+.link-btn{font:inherit;font-size:13px;color:var(--bone);background:transparent;border:0;border-bottom:1px solid var(--rust);cursor:pointer;margin-left:6px;padding:0}
+.practice{border-color:#c9a227!important;color:#e9c46a!important;letter-spacing:.1em}
+.practice[hidden]{display:none}
+.topbar{position:fixed;top:10px;right:12px;z-index:900;display:flex;align-items:center;gap:4px;background:rgba(13,15,18,.85);border:1px solid var(--line);padding:4px 8px;font-size:12px;color:var(--muted)}
+.topbar button{font:inherit;color:var(--bone);background:transparent;border:1px solid var(--line);width:30px;height:26px;cursor:pointer}
+.progress{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;font-size:14px;color:var(--bone)}
+.progress .bar{flex:1;min-width:120px;max-width:320px;height:4px;background:var(--line)}
+.progress .bar i{display:block;height:100%;width:0;background:var(--rust);transition:width .3s}
+.tools2{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 12px}
+.tools2 button{font:inherit;font-size:14px;color:var(--bone);background:transparent;border:1px solid var(--line);padding:8px 16px;cursor:pointer}
+.tools2 button:hover{border-color:var(--rust)}
+.nearmsg{margin:0 0 12px;color:var(--bone);font-size:14px;border-left:2px solid var(--rust);padding:6px 12px}
+.badge.done{background:var(--bone);color:#101214}
+.card.visited{border-color:rgba(232,228,218,.35)}
+.mine{margin-top:14px;display:grid;gap:8px}
+.seen{display:inline-flex;align-items:center;gap:8px;color:var(--bone);font-size:.9rem;cursor:pointer}
+.seen input,.chk input{width:18px;height:18px;accent-color:var(--rust)}
+.mine textarea{width:100%;font:inherit;font-size:.875rem;color:var(--bone);background:#101214;border:1px solid var(--line);padding:8px 10px;resize:vertical;min-height:52px}
+.mine textarea::placeholder{color:var(--muted)}
+.chk{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.chk label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:.95rem}
+.chk input{margin-top:5px;flex:none}@media(max-width:640px){.wrap{padding:0 16px}.stop{padding-left:54px}.stop .no{width:40px;height:40px;line-height:38px;font-size:17px}.stops:before{left:19px}.leg{padding-left:54px}.stat{margin-left:0;width:100%}.card{padding:18px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="topbar" role="group" aria-label="글자 크기"><span>글자</span><button type="button" id="fsDown" aria-label="글자 작게">A−</button><span id="fsLabel">100%</span><button type="button" id="fsUp" aria-label="글자 크게">A+</button></div>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">DARK TOURISM · 제주 서부</p>
+    <h1>기억의 <span>갱도</span></h1>
+    <p class="sub">제주 서부 일제강점기 진지 다크투어</p>
+    <div class="facts">
+      <div class="fact"><b>7</b>곳</div>
+      <div class="fact">직선거리 약 <b id="hKm">30</b>km</div>
+      <div class="fact">차로 <b>하루</b></div>
+      <div class="fact practice" id="practice" hidden>연습 모드</div>
+    </div>
+    <a class="go" href="#route">코스 보기 ↓</a>
+  </div>
+</header>
+
+<main>
+<section id="route">
+  <div class="wrap">
+    <p class="label">ROUTE</p>
+    <h2>수월봉에서 군산까지, 일곱 곳</h2>
+    <p class="lead">수월봉·청수리 가마오름·송악산·군산의 진지동굴, 셋알오름 고사포진지, 섯알오름, 모슬포항 등대. 서쪽 끝에서 출발해 남쪽 해안을 지나 동쪽의 군산에서 마칩니다.</p>
+    <div class="maptool">
+      <div class="seg" role="group" aria-label="방문 순서">
+        <button type="button" data-mode="rec" aria-pressed="true">추천 순서 (짧은 길)</button>
+        <button type="button" data-mode="list" aria-pressed="false">나열한 순서</button>
+      </div>
+      <div class="stat">직선거리 합계 <b id="sKm">–</b> · 차로 약 <b id="sMin">–</b></div>
+    </div>
+    <div class="progress"><span><b id="pDone">0</b> / 7곳 다녀왔어요</span><span class="bar"><i id="pBar"></i></span><span id="pMsg"></span></div>
+    <div class="tools2"><button type="button" id="near">내 위치에서 가장 가까운 곳</button><button type="button" id="copy">코스 글로 복사</button></div>
+    <p class="nearmsg" id="nearMsg" hidden></p>
+    <div id="status" class="status" hidden></div>
+    <div class="mapbox"><div id="map"></div><div class="maploading" id="mapLoading">불러오는 중…</div></div>
+    <p class="lead" id="modeNote" style="margin-top:12px;font-size:14px;color:var(--muted)"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">STOPS</p>
+    <h2>걸어 들어가는 순서</h2>
+    <p class="lead">각 장소의 설명은 제주특별자치도 제주역사문화 API(공공데이터포털, 2022-12-09 기준 데이터)에서 가져왔어요. 자료가 이 장소를 직접 설명하지 않는 곳에는 따로 메모를 붙였어요.</p>
+    <ol class="stops" id="stops"><li class="loading" role="status">불러오는 중…</li></ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="label">BEFORE YOU GO</p>
+    <h2>이 길을 걷기 전에</h2>
+    <p class="lead">관광지이기 전에 사람들이 강제로 일했고, 목숨을 잃은 곳입니다. 조용히, 천천히 걷는 것을 권해요.</p>
+    <div class="grid2">
+      <div class="box"><h3>태도</h3><ul><li>동굴과 유적은 소리 내지 않고 둘러봐요.</li><li>추모 공간(백조일손지묘 등)에서는 사진 촬영 전에 한 번 더 생각해요.</li><li>유적 위에 오르거나 낙서·채집은 하지 않아요.</li></ul></div>
+      <div class="box"><h3>안전</h3><ul><li>동굴 안은 어둡고 바닥이 젖어 있을 수 있어요. 손전등과 미끄럼 방지 신발을 챙겨요.</li><li>출입이 막힌 곳은 들어가지 않아요.</li><li>해안 절벽과 오름 가장자리는 바람이 세요.</li></ul></div>
+      <div class="box"><h3>이동</h3><ul><li>7곳 모두 차로 이동하는 하루 코스예요(직선거리 기준이라 실제 도로는 더 길어요).</li><li>추천 순서는 짧은 길 기준이에요. 해 지는 시간과 개방 시간은 출발 전에 확인해요.</li></ul></div>
+    </div>
+  </div>
+</section>
+<section>
+  <div class="wrap">
+    <p class="label">CHECKLIST</p>
+    <h2>출발 전 체크리스트</h2>
+    <p class="lead">누르면 이 컴퓨터에 저장돼요.</p>
+    <ul class="chk">
+      <li><label><input type="checkbox" data-chk="1"> 일곱 곳의 개방 시간과 출입 가능 여부를 확인했어요 (자료에는 없어서 현장·관할 기관에서 확인해야 해요).</label></li>
+      <li><label><input type="checkbox" data-chk="2"> 손전등과 미끄럼 방지 신발, 겉옷을 챙겼어요.</label></li>
+      <li><label><input type="checkbox" data-chk="3"> 차량과 연료, 점심 계획을 정했어요 (서귀포 대정읍 일대는 식당이 많지 않아요).</label></li>
+      <li><label><input type="checkbox" data-chk="4"> 해 지는 시간을 확인하고 마지막 장소를 해 지기 전에 마치도록 짰어요.</label></li>
+      <li><label><input type="checkbox" data-chk="5"> 이 길의 배경(일제강점기 진지, 1950년 예비검속)을 한 번 읽어 봤어요.</label></li>
+      <li><label><input type="checkbox" data-chk="6"> 추모 공간에서는 조용히 하고 사진 촬영을 조심하기로 했어요.</label></li>
+    </ul>
+  </div>
+</section></main>
+
+<footer><div class="wrap">
+  자료 출처: 제주특별자치도 제주역사문화 위치정보·일반정보 (공공데이터포털 API, 데이터 기준일 2022-12-09). 지도 타일 © Esri.<br>
+  거리는 두 지점 사이의 직선거리이고, 차 이동 시간은 평균 40km/h를 가정한 어림값이에요.
+</div></footer>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(async function(){
+  // 7곳의 번호. 데이터는 /api/places 에서 받아와요(서버가 공공데이터포털 API를 대신 호출).
+  const ORDER_LIST=["2470","3778","2992","2460","2480","941","2636"];   // 말씀하신 나열 순서
+  const ORDER_REC =["2470","3778","2636","2480","941","2992","2460"];   // 직선거리 가장 짧은 순서
+  // 자료만으로는 부족하거나 주의할 점 (장소 번호별 메모)
+  const MEMO={
+    "2470":"자료의 설명은 제주 여러 곳의 진지동굴을 소개하는 공통 문장(관광 매뉴얼 발췌)이에요. 군산진지동굴 항목과 같은 글이에요.",
+    "2992":"자료의 '송악산 해안동굴' 항목은 풍경과 드라마 촬영지 소개이고, 일제 진지에 대한 설명은 없어요. 이 길의 진지동굴로 안내하려면 현장 안내판이나 다른 자료로 한 번 더 확인해 주세요.",
+    "2460":"수월봉진지동굴 항목과 같은 공통 설명이에요. 장소만의 이야기는 현장에서 확인해야 해요.",
+    "2480":"자료는 이곳을 '섯알오름의 일본군 탄약고'로 설명해요. 항목 이름은 '셋알오름'이고 섯알오름 항목과 직선 0.1km 거리라, 같은 일대로 이어서 보면 돼요.",
+    "941":"자료 본문은 4·3 연구 서적의 일부이고 이 장소 자체의 설명은 아니에요. 같은 일대 이야기는 바로 앞 셋알오름 항목이 담고 있어요."
+  };
+  // 연습 모드용: 1단계 CSV에서 뽑아 둔 7곳 (API가 안 될 때만 사용)
+  const FALLBACK=[{"id":"2470","name":"수월봉진지동굴","lat":33.299932,"lon":126.167904,"addr":"제주특별자치도 제주시 한경면 고산리 3672-1","cat":"확장분야","dir":"역사","title":"수월봉진지동굴","text":"일제시대에 일본군이 전쟁을 계속하기위해 소형의 특수잠수정이나 비행기. 곡사포 등 군수물품을 숨겨둘 목적으로 제주도민을 강제로 부역시켜 만든 곳이다. 제주시 사라봉. 명도암. 성산일출봉. 송악산. 우도 등지에 있다. \u003c 발췌 : 제주관광메뉴얼 P 55. 제주도 >","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=2509"},{"id":"3778","name":"청수리 가마오름 일제 진지동굴","lat":33.30517,"lon":126.247815,"addr":"제주특별자치도 제주시 한경면 청수리 1166","cat":"확장분야","dir":"역사","title":"오늘에 남아있는 일제의 흔적들","text":"오늘에 남아있는 일제의 흔적들은 일제시대의 유적들을 사진으로 담아놓은 사진 집이다. 우리가 잘 알고 있는 진지동굴이라든지 모슬포에 즐비하게 있었던 격납고같은 설치물들. 고사포 기지. 그리고 주정공장의 모습이라 든지 당시의 적지 였거나 그랬을지도 모를 곳들이 사진으로 담겨져 있다 말 그대로 역사의 흔적인 것이다.","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=3778"},{"id":"2992","name":"송악산 해안동굴","lat":33.206047,"lon":126.289732,"addr":"제주특별자치도 서귀포시 대정읍 상모리 179-4","cat":"확장분야","dir":"자연","title":"해안동굴","text":"올인 촬영지\"송악산\" 쪽빛바다와 언덕이 아름답게 어울리는 크고 작은 봉우리들이 모여 있는 송악산에서 드라마 올인 촬영을 하였다. 멀리 우리나라 최남단인 마라도가 보이고 비가 조금만 내려도 가라앉을듯한 가파도가 한 폭의 그림처럼 떠 있다. 멀리로는 한라산이 보이고 동쪽으로는 산방산과 용머리 해안이 시야에 들어오고 형제섬도 보인다. \u003c발췌 : 즐거운 제주 P241. 2007년>","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=2992"},{"id":"2460","name":"군산진지동굴","lat":33.252791,"lon":126.369949,"addr":"제주특별자치도 서귀포시 안덕면 창천리 산1","cat":"확장분야","dir":"역사","title":"군산진지동굴내부에서본풍경","text":"일제시대에 일본군이 전쟁을 계속하기위해 소형의 특수잠수정이나 비행기. 곡사포 등 군수물품을 숨겨둘 목적으로 제주도민을 강제로 부역시켜 만든 곳이다. 제주시 사라봉. 명도암. 성산일출봉. 송악산. 우도 등지에 있다. \u003c 발췌 : 제주관광메뉴얼 P 55. 제주도 >","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=2490"},{"id":"2480","name":"셋알오름 일제 고사포진지","lat":33.206526,"lon":126.281047,"addr":"제주특별자치도 서귀포시 대정읍 상모리 1590-3","cat":"확장분야","dir":"역사","title":"일본군탄약고","text":"송악산 섯알오름에 위치했던 일본군의 탄약고. 지하에 구축된 일본군의 탄약고는 주변의 진지동굴로 이어지게 설계됐는데 훗날 4.3사건을 겪었으며 1950년 이곳에서 예비검속자 252명이 집단 학살되는 비극의 장소이기도 하다. 당시 희생된 사람들은 백조일손지묘에 안장돼 있다.","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=2524"},{"id":"941","name":"섯알오름","lat":33.205605,"lon":126.281085,"addr":"제주특별자치도 서귀포시 대정읍 상모리 1618","cat":"민속","dir":"기타","title":"갇힌 울음 열린 소리","text":"제주도의 소위 ‘4.3사건’이 일어난 것이 1948년 4월 3일. 이 달로 꼭 만 40년이 된다. 이 40년 동안 이 사건은 외국인 존 메릴을 위시한 몇 사람에 의하여 단편적으로 거론된 적이 있을 뿐. 한 번도 전체적으로 조명된 바 없다. “지난 40년간. ‘4.3의 역사’는 지워진 것이 아니라 쓰여지지 않았으며. 잊어버린 것이 아니라 잊기를 강요당했을 뿐이었다”는 주장이 실감있게 들릴 정도이다. 심지어 사망 인원 등 피해상황까지도 그 동안의 기록은 각각이었다. 김남식의 \u003c남로당>과 제주도가 발행한 \u003c제주도>8호가 인명피해를 8만65명으로 기록하고 있는가 하면. 하성수의 \u003c남로당사>는 살상 인원을 8만5천여 명으로. 좌익사건에서 쓴 김봉헌의 \u003c濟州道 血の　歷史>는 7만명으로. 1960년 당시 제주도 국회의원 김성숙은 국회에 제출한 \u003c제주도 양민학살 건의안>에 5만 명으로. 또 1956년판 \u003c한국편람>은 4만여 명으로. 존 메릴은 그의 \u003c제주도 반란>에서 ‘최소한 당시 도민의 10%인 3만명은 죽었을 것’으로 추정하고 있다. 1982년 제주도가 발행한 \u003c濟州道誌>는 사망자를 2만7천7백19명. 중상을 1천80명. 행불 38명 등으로 기록하고 있다. 지난 2월 25일 제6공화국의 출범을 앞두고 민주화합추진위원회는 “8년 전에 있었던 ‘광주사태’에 대해서 정부가 사과하고 명예회복과 보상 등으로 8년 응어리를 풀어야 한다.”는 내용의 \u003c광주 사태 치유방안 건의문>을 제출한 바 있다. 이런 ‘화해무드’를 타고 거창사건유족회원 2백여 명도 지난 2월 15일 거창 현지에서 6.25동란 중 국군이 거창군 신원면 일대에서 공비를 토벌하면서 주민 7백19명을 공비와 내통한 것으로 오인. 집단 학살한 사건을 해결해 달라는 결의대회를 갖는 등 정식으로 이 사건을 들고 일어섰다. 그러나 이 같은 정부 차원의 과잉진압과 학살의 최초의 예는 아무래도 ‘4.3사태’로 생각된다. ‘40년의 한’을 풀려고 제주도에서 함덕리와 토산리의 일부 주민들이 대정부 진상의 기미를 보이고 있다. 또한 근년에 들어서는 학생들이 이 사건에 관심을 보이고 있고. 자료집(도서출판 온누리의 ‘제주도 4.3항쟁의 기록’)도 발간되는 등 40년 동안 묻혔던 역사가 새롭게 조명될 시점에 있다.","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=941"},{"id":"2636","name":"모슬포항 등대","lat":33.214404,"lon":126.251742,"addr":"제주특별자치도 서귀포시 대정읍 하모리 694-1","cat":"확장분야","dir":"사회","title":"모슬포항등대","text":"제주도남서쪽 끝에 있으며 배후에 모슬봉(187m)·가시악을 등지고 있는 남서부 해안은 암석해안 또는 암초로 둘러싸여 천연의 방파제가 되고 있다. 포구는 중앙에 돌출한 작은 반도에 의하여 항구가 좌우로 양분된다. 포구는 항내가 좁을 뿐더러 배후지를 제주와 서귀포에 빼앗겨 어항으로서만 발전해 왔다","url":"https://www.jeju.go.kr/culture/digitalContents/directory.htm?classification=&subClassification=&act=view&seq=2636"}];
+
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const none=v=>!v||v==='해당없음';
+  const R=Math.PI/180;
+  const km=(a,b)=>{const h=Math.sin((b.lat-a.lat)*R/2)**2+Math.cos(a.lat*R)*Math.cos(b.lat*R)*Math.sin((b.lon-a.lon)*R/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+  const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+  const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)};
+
+  let STOPS=[],by={},practice=false,mode='rec',map=null,layer=null,markers={},meMarker=null,leaders=null;
+  let visited=LS.get('gaengdo-visited',[]),notes=LS.get('gaengdo-notes',{}),checks=LS.get('gaengdo-checks',[]),scale=LS.get('gaengdo-scale',1);
+  const order=()=>mode==='rec'?ORDER_REC:ORDER_LIST;
+  const total=o=>o.slice(1).reduce((s,id,i)=>s+km(by[o[i]],by[id]),0);
+
+  // ---- 지도 ----
+  if(window.L){
+    map=L.map('map',{scrollWheelZoom:false}).setView([33.26,126.26],10);
+    // 키가 필요 없는 Esri 어두운 회색 지도. 타일이 안 오면 OpenStreetMap(키 불필요)으로 바꿈
+    const t=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxNativeZoom:16,maxZoom:18,attribution:'Tiles © Esri'}).addTo(map);
+    let e=0;t.on('tileerror',()=>{if(++e===6){map.removeLayer(t);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map)}});
+    layer=L.layerGroup().addTo(map);
+    leaders=L.layerGroup().addTo(map);
+    map.on('zoomend',()=>layoutBadges());
+    map.on('click',()=>map.scrollWheelZoom.enable());map.on('mouseout',()=>map.scrollWheelZoom.disable());
+  }else $('map').innerHTML='<div class="nomap">지도를 불러오지 못했어요.<br>인터넷에 연결된 상태에서 다시 열어 주세요. 코스 설명은 아래에서 그대로 볼 수 있어요.</div>';
+
+  // ---- 데이터: API 먼저, 안 되면 1단계 파일 데이터(연습 모드) ----
+  function showStatus(lines,kind,retry){
+    const st=$('status');st.hidden=!lines.length;st.className='status '+(kind||'');
+    st.innerHTML=lines.map(esc).join('<br>')+(retry?' <button type="button" id="retry" class="link-btn">다시 불러오기</button>':'');
+  }
+  async function load(){
+    $('mapLoading').hidden=false;
+    $('stops').innerHTML='<li class="loading" role="status">불러오는 중…</li>';
+    showStatus([]);
+    let items=null,reason='',warns=[];
+    try{
+      const res=await fetch('/api/places?ids='+ORDER_LIST.join(','));
+      const j=await res.json().catch(()=>null);
+      if(!res.ok||!j||j.error)throw new Error((j&&j.error&&j.error.message)||('서버 응답 오류 (HTTP '+res.status+')'));
+      const missing=ORDER_LIST.filter(id=>!j.items.some(s=>s.id===id));
+      if(missing.length)throw new Error('API 결과에 없는 장소 번호가 있어요: '+missing.join(', '));
+      items=j.items;warns=(j.warnings||[]).map(w=>w.message);practice=false;
+    }catch(err){
+      practice=true;items=FALLBACK;
+      reason=err instanceof TypeError?'서버에 연결하지 못했어요. 터미널에서 node server.js 를 실행한 뒤 http://localhost:3000 으로 열면 API 데이터로 바뀌어요.':err.message;
+    }
+    STOPS=items;by=Object.fromEntries(items.map(s=>[s.id,s]));
+    $('practice').hidden=!practice;document.body.classList.toggle('practice',practice);
+    if(practice)showStatus(['연습 모드 — API에서 데이터를 불러오지 못해 1단계 파일 데이터로 보여 주고 있어요.',reason],'practice',true);
+    else if(warns.length)showStatus(warns,'warn',true);
+    $('mapLoading').hidden=true;
+    $('hKm').textContent=Math.round(total(ORDER_REC));
+    draw(true);
+  }
+
+  // ---- 그리기 ----
+  const addrOf=s=>s.addr||('좌표 '+s.lat.toFixed(5)+', '+s.lon.toFixed(5));
+  const badgeIcon=(n,id)=>L.divIcon({className:'',iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-14],html:'<div class="badge'+(visited.includes(id)?' done':'')+'">'+(visited.includes(id)?'✓':n)+'</div>'});
+  // 가까운 스탬프(번호 핀)가 겹쳐 보이지 않게: 38px 안에 모인 것들을 둘레로 흩어 놓고,
+  // 실제 위치와는 가는 선과 작은 점으로 이어요. 지도를 확대하면 자연스럽게 제자리로 돌아가요.
+  function layoutBadges(){
+    if(!map||!leaders)return;
+    leaders.clearLayers();
+    const ids=Object.keys(markers);
+    ids.forEach(id=>markers[id].setLatLng(markers[id]._true));
+    const pt={};ids.forEach(id=>pt[id]=map.latLngToLayerPoint(markers[id]._true));
+    const seen=new Set(),groups=[];
+    ids.forEach(id=>{if(seen.has(id))return;const g=[id];seen.add(id);
+      for(let k=0;k<g.length;k++)ids.forEach(o=>{if(!seen.has(o)&&pt[g[k]].distanceTo(pt[o])<38){seen.add(o);g.push(o)}});
+      groups.push(g)});
+    const o=order();
+    groups.filter(g=>g.length>1).forEach(g=>{
+      g.sort((a,b)=>o.indexOf(a)-o.indexOf(b));
+      const c=g.reduce((s,id)=>s.add(pt[id]),L.point(0,0)).divideBy(g.length);
+      const r=g.length===2?24:g.length===3?30:36;
+      g.forEach((id,k)=>{
+        const a=-Math.PI/2+k*2*Math.PI/g.length;
+        markers[id].setLatLng(map.layerPointToLatLng(L.point(c.x+r*Math.cos(a),c.y+r*Math.sin(a))));
+        L.polyline([markers[id]._true,markers[id].getLatLng()],{color:'#e8e4da',weight:1,opacity:.7,interactive:false}).addTo(leaders);
+        L.circleMarker(markers[id]._true,{radius:3,color:'#e8e4da',weight:1,fillColor:'#d4604a',fillOpacity:1,interactive:false}).addTo(leaders);
+      });
+    });
+  }
+  function highlight(id){document.querySelectorAll('.card').forEach(c=>c.classList.toggle('on',c.dataset.id===id))}
+  function updateProgress(){
+    const n=ORDER_LIST.filter(id=>visited.includes(id)).length;
+    $('pDone').textContent=n;$('pBar').style.width=(n/ORDER_LIST.length*100)+'%';
+    $('pMsg').textContent=n===ORDER_LIST.length?'일곱 곳을 모두 걸었어요. 오늘의 기억을 한 줄씩 남겨 보세요.':'';
+  }
+  function draw(refit){
+    const o=order(),d=total(o);
+    $('sKm').textContent=d.toFixed(1)+'km';$('sMin').textContent=Math.round(d/40*60)+'분';
+    $('modeNote').textContent=mode==='rec'
+      ?'추천 순서는 일곱 곳을 모든 순서로 비교해 직선거리가 가장 짧게 나온 길이에요(약 '+total(ORDER_REC).toFixed(1)+'km).'
+      :'나열한 순서는 동쪽 끝 군산에 들렀다가 다시 서쪽으로 돌아와 약 '+total(ORDER_LIST).toFixed(1)+'km가 돼요. 추천 순서와 '+(total(ORDER_LIST)-total(ORDER_REC)).toFixed(1)+'km 차이예요.';
+    if(map){layer.clearLayers();markers={};
+      const pts=o.map(id=>[by[id].lat,by[id].lon]);
+      L.polyline(pts,{color:'#d4604a',weight:3,opacity:.9,dashArray:'9 8'}).addTo(layer);
+      o.forEach((id,i)=>{const s=by[id];
+        const m=L.marker([s.lat,s.lon],{title:s.name,icon:badgeIcon(i+1,id)}).addTo(layer);
+        m.bindPopup('<b>'+(i+1)+'. '+esc(s.name)+'</b>'+esc(addrOf(s)));
+        m._true=L.latLng(s.lat,s.lon);
+        m.on('click',()=>{highlight(id);document.getElementById('s'+id).scrollIntoView({behavior:'smooth',block:'center'})});markers[id]=m});
+      if(refit!==false)map.fitBounds(pts,{padding:[50,50],animate:false});
+      layoutBadges();
+    }
+    $('stops').innerHTML=o.map((id,i)=>{const s=by[id];
+      const dd=i?km(by[o[i-1]],s):0;
+      const leg=i?'<li class="leg" aria-hidden="true">'+dd.toFixed(1)+'km · 차로 약 '+Math.max(1,Math.round(dd/40*60))+'분</li>':'';
+      const tags=[s.cat,s.dir].filter(v=>!none(v)).map(v=>'<span class="tag">'+esc(v)+'</span>').join('');
+      return leg+'<li class="stop" id="s'+id+'"><span class="no">'+(i+1)+'</span><div class="card'+(visited.includes(id)?' visited':'')+'" data-id="'+id+'"><h3>'+esc(s.name)+'</h3><div class="tags">'+tags+'</div>'+
+        '<p class="addr">'+esc(addrOf(s))+'</p>'+(none(s.title)?'':'<p class="t">'+esc(s.title)+'</p>')+
+        (none(s.text)?'':'<p class="txt clamp" data-t="'+id+'">'+esc(s.text.replace(/\s+/g,' '))+'</p>')+
+        (MEMO[id]?'<div class="note"><small>메모</small>'+esc(MEMO[id])+'</div>':'')+
+        '<div class="mine"><label class="seen"><input type="checkbox" data-seen="'+id+'"'+(visited.includes(id)?' checked':'')+'> 다녀왔어요</label>'+
+        '<textarea data-note="'+id+'" rows="2" maxlength="300" aria-label="'+esc(s.name)+' 내 기억 한 줄" placeholder="이곳에서 기억하고 싶은 한 줄 (이 컴퓨터에만 저장돼요)">'+esc(notes[id]||'')+'</textarea></div>'+
+        '<div class="act">'+(map?'<button type="button" data-map="'+id+'">지도에서 보기</button>':'')+(s.text&&s.text.length>120?'<button type="button" data-more="'+id+'">설명 더 보기</button>':'')+
+        '<a target="_blank" rel="noopener" href="https://www.google.com/maps?q='+s.lat+','+s.lon+'">길찾기 ↗</a>'+(none(s.url)?'':'<a target="_blank" rel="noopener" href="'+esc(s.url)+'">자료 원문 ↗</a>')+'</div></div></li>'}).join('');
+    updateProgress();
+  }
+
+  // ---- 글자 크기 ----
+  const SCALES=[0.9,1,1.15,1.3];
+  function applyScale(){document.documentElement.style.setProperty('--scale',scale);$('fsLabel').textContent=Math.round(scale*100)+'%'}
+  applyScale();
+
+  // ---- 체크리스트 ----
+  document.querySelectorAll('[data-chk]').forEach(c=>{c.checked=checks.includes(c.dataset.chk)});
+
+  // ---- 이벤트 ----
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.id==='retry'){load();return}
+    if(b.dataset.mode){mode=b.dataset.mode;document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',x===b));if(STOPS.length)draw(true);return}
+    if(b.dataset.map&&map){const m=markers[b.dataset.map];$('map').scrollIntoView({behavior:'smooth',block:'center'});map.setView(m._true,14);m.openPopup();highlight(b.dataset.map);return}
+    if(b.dataset.more){const p=document.querySelector('[data-t="'+b.dataset.more+'"]');const closed=p.classList.toggle('clamp');b.textContent=closed?'설명 더 보기':'접기';return}
+    if(b.id==='fsUp'||b.id==='fsDown'){const i=SCALES.indexOf(scale),j=Math.max(0,Math.min(SCALES.length-1,(i<0?1:i)+(b.id==='fsUp'?1:-1)));scale=SCALES[j];LS.set('gaengdo-scale',scale);applyScale();return}
+    if(b.id==='copy'){
+      if(!STOPS.length)return;
+      const o=order();
+      const txt='[나의 제주 서부 다크투어 코스 — 기억의 갱도]\n'+o.map((id,i)=>(i+1)+'. '+by[id].name+' ('+addrOf(by[id])+')'+(visited.includes(id)?' ✓ 다녀옴':'')+(notes[id]?'\n   - '+notes[id]:'')).join('\n')+'\n직선거리 합계 약 '+total(o).toFixed(1)+'km'+(practice?'\n(연습 모드 데이터)':'');
+      (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('코스를 글로 복사했어요'),()=>{prompt('복사해서 쓰세요',txt)});return}
+    if(b.id==='near'){
+      if(!STOPS.length)return;
+      if(!navigator.geolocation){toast('이 브라우저는 위치 기능을 지원하지 않아요');return}
+      toast('위치를 확인하는 중…');
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const p={lat:pos.coords.latitude,lon:pos.coords.longitude};
+        let best=null,bd=1e9;STOPS.forEach(s=>{const d=km(p,s);if(d<bd){bd=d;best=s}});
+        const n=order().indexOf(best.id)+1;
+        $('nearMsg').hidden=false;
+        $('nearMsg').textContent='지금 위치에서 가장 가까운 곳은 '+n+'번 '+best.name+(/[가-힣]/.test(best.name.slice(-1))&&(best.name.charCodeAt(best.name.length-1)-0xAC00)%28!==0?'이에요':'예요')+' (직선거리 약 '+bd.toFixed(1)+'km).'+(bd>80?' 제주 서부에서 멀리 계신 것 같아요.':'');
+        if(map){if(meMarker)meMarker.remove();meMarker=L.circleMarker([p.lat,p.lon],{radius:7,color:'#e8e4da',weight:2,fillColor:'#d4604a',fillOpacity:1}).addTo(map).bindTooltip('내 위치');
+          if(bd<80)map.fitBounds([[p.lat,p.lon],[best.lat,best.lon]],{padding:[60,60]})}
+        highlight(best.id);document.getElementById('s'+best.id).scrollIntoView({behavior:'smooth',block:'center'});
+      },err=>toast(err.code===1?'위치 사용이 허용되지 않았어요. 브라우저 주소창에서 허용해 주세요.':'위치를 확인하지 못했어요'),{timeout:10000});return}
+  });
+  document.addEventListener('change',e=>{
+    const t=e.target;
+    if(t.dataset.seen){const id=t.dataset.seen;visited=t.checked?visited.concat(id).filter((v,i,a)=>a.indexOf(v)===i):visited.filter(x=>x!==id);LS.set('gaengdo-visited',visited);
+      t.closest('.card').classList.toggle('visited',t.checked);updateProgress();
+      if(map){const o=order();Object.keys(markers).forEach(k=>markers[k].setIcon(badgeIcon(o.indexOf(k)+1,k)))}return}
+    if(t.dataset.chk){checks=t.checked?checks.concat(t.dataset.chk):checks.filter(x=>x!==t.dataset.chk);LS.set('gaengdo-checks',checks);return}
+  });
+  let nt=null;
+  document.addEventListener('input',e=>{const t=e.target;if(!t.dataset.note)return;
+    clearTimeout(nt);nt=setTimeout(()=>{if(t.value.trim())notes[t.dataset.note]=t.value;else delete notes[t.dataset.note];LS.set('gaengdo-notes',notes)},300)});
+
+  await load();
+})();
+
+</script>
+</body>
+</html>

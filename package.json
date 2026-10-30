@@ -1,0 +1,12 @@
+{
+  "name": "memory-tunnel-stage2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "기억의 갱도 2단계 - 제주역사문화 API 호출 버전",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
